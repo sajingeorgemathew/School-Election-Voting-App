@@ -45,19 +45,19 @@ def submit_vote():
 
 # Show results
 @app.route('/results')
-def show_results():
-    conn = sqlite3.connect('database.db')
+def results():
+    import sqlite3
+    conn = sqlite3.connect('votes.db')
     c = conn.cursor()
-    c.execute("SELECT position, candidate, COUNT(*) FROM votes GROUP BY position, candidate ORDER BY position, COUNT(*) DESC")
+    c.execute('''
+        SELECT position, candidate, COUNT(*) as vote_count
+        FROM votes
+        GROUP BY position, candidate
+        ORDER BY position, vote_count DESC
+    ''')
     results = c.fetchall()
-    top_candidates = {}
-    for row in results:
-        position, candidate, count = row
-        if position not in top_candidates:
-            top_candidates[position] = []
-        top_candidates[position].append((candidate, count))
     conn.close()
-    return render_template('results.html', results=top_candidates)
+    return render_template('results.html', results=results)
 
 if __name__ == '__main__':
     print("Flask app is starting...")

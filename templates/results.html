@@ -5,12 +5,14 @@
     <style>
         body { font-family: Arial; padding: 20px; }
         table { border-collapse: collapse; width: 70%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background-color: #f2f2f2; }
+        th, td { border: 1px solid #999; padding: 10px; text-align: center; }
+        th { background-color: #eee; }
     </style>
 </head>
 <body>
     <h2>Live Election Results</h2>
+
+    {% if results %}
     <table>
         <tr>
             <th>Position</th>
@@ -25,5 +27,8 @@
         </tr>
         {% endfor %}
     </table>
+    {% else %}
+    <p>No votes yet.</p>
+    {% endif %}
 </body>
 </html>
