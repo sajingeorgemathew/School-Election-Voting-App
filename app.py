@@ -43,17 +43,19 @@ def submit_vote():
     conn.close()
     return render_template('success.html')
 
-# Show results
 @app.route('/results')
 def results():
-    import sqlite3
-    conn = sqlite3.connect('votes.db')
+    conn = sqlite3.connect('database.db')
     c = conn.cursor()
+
     c.execute('''
-        SELECT position, candidate, COUNT(*) as vote_count
-        FROM votes
-        GROUP BY position, candidate
-        ORDER BY position, vote_count DESC
+        SELECT position, candidate, vote_count FROM (
+            SELECT position, candidate, COUNT(*) AS vote_count,
+                   RANK() OVER (PARTITION BY position ORDER BY COUNT(*) DESC) AS rank
+            FROM votes
+            GROUP BY position, candidate
+        )
+        WHERE rank = 1;
     ''')
     results = c.fetchall()
     conn.close()
