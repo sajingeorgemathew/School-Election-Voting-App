@@ -8,6 +8,10 @@
     <div class="container">
         <h2>School Election - Cast Your Vote</h2>
         <form method="POST" action="/submit">
+            <div class="mb-3">
+                <label for="student_id">Student ID:</label>
+                <input type="text" name="student_id" required>
+            </div>
             {% for position, candidates in positions.items() %}
                 <div class="mb-3">
                     <label class="form-label">{{ position }}</label>

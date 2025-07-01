@@ -11,6 +11,7 @@ def init_db():
     c.execute('''
         CREATE TABLE IF NOT EXISTS votes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id TEXT,
             position TEXT,
             candidate TEXT
         )
@@ -34,11 +35,24 @@ def vote_form():
 # Save vote
 @app.route('/submit', methods=['POST'])
 def submit_vote():
+    student_id = request.form.get('student_id')
+    
     conn = sqlite3.connect('database.db')
     c = conn.cursor()
+
+    # Check if student already voted
+    c.execute("SELECT COUNT(*) FROM votes WHERE student_id = ?", (student_id,))
+    if c.fetchone()[0] > 0:
+        conn.close()
+        return "You have already voted. Only one vote per student is allowed."
+
+    # Save each vote per position
     for position in request.form:
+        if position == 'student_id':
+            continue
         candidate = request.form[position]
-        c.execute("INSERT INTO votes (position, candidate) VALUES (?, ?)", (position, candidate))
+        c.execute("INSERT INTO votes (student_id, position, candidate) VALUES (?, ?, ?)", (student_id, position, candidate))
+
     conn.commit()
     conn.close()
     return render_template('success.html')
