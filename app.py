@@ -1,14 +1,22 @@
 from flask import Flask, render_template, request
 import os
 
-# Use PostgreSQL if on Render, otherwise use SQLite locally
-USE_POSTGRES = bool(os.environ.get('postgresql://school_election_db_user:KWVfdNk31DsxCJtBkSqyRvkuc7tkTWpk@dpg-d1i5sdfdiees73cdjp60-a.oregon-postgres.render.com/school_election_db'))
+# Determine if we are using PostgreSQL
+DATABASE_URL = os.environ.get('DATABASE_URL')
+USE_POSTGRES = bool(DATABASE_URL)
 
+# Debug logging (will show in Render logs)
+if USE_POSTGRES:
+    print("✅ Render: Connected to PostgreSQL")
+else:
+    print("⚠️ Render: Falling back to SQLite")
+
+# Use correct DB adapter
 if USE_POSTGRES:
     import psycopg2
     import psycopg2.extras
     def get_db_connection():
-        return psycopg2.connect(os.environ['postgresql://school_election_db_user:KWVfdNk31DsxCJtBkSqyRvkuc7tkTWpk@dpg-d1i5sdfdiees73cdjp60-a.oregon-postgres.render.com/school_election_db'], sslmode='require')
+        return psycopg2.connect(DATABASE_URL, sslmode='require')
 else:
     import sqlite3
     def get_db_connection():
@@ -17,7 +25,7 @@ else:
 # Create the Flask app
 app = Flask(__name__)
 
-# Initialize the database (only locally)
+# Initialize local database (only for local development)
 def init_db():
     if not USE_POSTGRES:
         conn = get_db_connection()
@@ -53,8 +61,8 @@ def submit_vote():
     conn = get_db_connection()
     c = conn.cursor()
 
-    # Check if student already voted
-    c.execute("SELECT COUNT(*) FROM votes WHERE student_id = %s" if USE_POSTGRES else "SELECT COUNT(*) FROM votes WHERE student_id = ?", (student_id,))
+    check_query = "SELECT COUNT(*) FROM votes WHERE student_id = %s" if USE_POSTGRES else "SELECT COUNT(*) FROM votes WHERE student_id = ?"
+    c.execute(check_query, (student_id,))
     if c.fetchone()[0] > 0:
         conn.close()
         return "You have already voted. Only one vote per student is allowed."
@@ -63,13 +71,14 @@ def submit_vote():
         if position == 'student_id':
             continue
         candidate = request.form[position]
-        query = "INSERT INTO votes (student_id, position, candidate) VALUES (%s, %s, %s)" if USE_POSTGRES else "INSERT INTO votes (student_id, position, candidate) VALUES (?, ?, ?)"
-        c.execute(query, (student_id, position, candidate))
+        insert_query = "INSERT INTO votes (student_id, position, candidate) VALUES (%s, %s, %s)" if USE_POSTGRES else "INSERT INTO votes (student_id, position, candidate) VALUES (?, ?, ?)"
+        c.execute(insert_query, (student_id, position, candidate))
 
     conn.commit()
     conn.close()
     return render_template('success.html')
 
+# Show results
 @app.route('/results')
 def results():
     conn = get_db_connection()
@@ -89,6 +98,7 @@ def results():
     conn.close()
     return render_template('results.html', results=results)
 
+# Local dev runner
 if __name__ == '__main__':
     print("Flask app is starting...")
     init_db()
