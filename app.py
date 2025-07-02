@@ -7,9 +7,9 @@ USE_POSTGRES = bool(DATABASE_URL)
 
 # Debug logging (will show in Render logs)
 if USE_POSTGRES:
-    print("✅ Render: Connected to PostgreSQL")
+    print("Render: Connected to PostgreSQL")
 else:
-    print("⚠️ Render: Falling back to SQLite")
+    print("Render: Falling back to SQLite")
 
 # Use correct DB adapter
 if USE_POSTGRES:
