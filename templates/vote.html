@@ -1,30 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>School Election Voting</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>Vote Now</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f4f8;
+            padding: 30px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .position-section {
+            margin-bottom: 30px;
+        }
+        .position-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #0057a3;
+        }
+        .candidates {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .candidate-card {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            background: white;
+            transition: transform 0.2s, border-color 0.3s;
+            width: 150px;
+        }
+        .candidate-card:hover {
+            transform: scale(1.05);
+            border-color: #007bff;
+        }
+        .candidate-card input {
+            margin-top: 10px;
+        }
+        .candidate-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+        .submit-btn {
+            display: block;
+            margin: 30px auto;
+            padding: 10px 30px;
+            font-size: 1.2em;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background: #0056b3;
+        }
+        .student-id-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .student-id-box input {
+            padding: 10px;
+            font-size: 1em;
+            width: 300px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
 </head>
-<body class="p-4">
-    <div class="container">
-        <h2>School Election - Cast Your Vote</h2>
-        <form method="POST" action="/submit">
-            <div class="mb-3">
-                <label for="student_id">Student ID:</label>
-                <input type="text" name="student_id" required>
+<body>
+    <h1>🗳️ School Election 2025</h1>
+    <form method="POST" action="/submit">
+
+        <div class="student-id-box">
+            <label><strong>Student ID:</strong></label><br>
+            <input type="text" name="student_id" required>
+        </div>
+
+        {% for position, candidates in positions.items() %}
+        <div class="position-section">
+            <div class="position-title">{{ position }}</div>
+            <div class="candidates">
+                {% for candidate in candidates %}
+                <label class="candidate-card">
+                    <!-- Replace src with real image paths if available -->
+                    <img src="/static/{{ candidate | lower }}.jpg" alt="{{ candidate }} photo" onerror="this.src='https://via.placeholder.com/80'">
+                    <div><strong>{{ candidate }}</strong></div>
+                    <input type="radio" name="{{ position }}" value="{{ candidate }}" required>
+                </label>
+                {% endfor %}
             </div>
-            {% for position, candidates in positions.items() %}
-                <div class="mb-3">
-                    <label class="form-label">{{ position }}</label>
-                    {% for candidate in candidates %}
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="{{ position }}" value="{{ candidate }}" required>
-                            <label class="form-check-label">{{ candidate }}</label>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endfor %}
-            <button type="submit" class="btn btn-primary">Submit Vote</button>
-        </form>
-    </div>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="submit-btn">Submit Vote</button>
+    </form>
 </body>
 </html>
