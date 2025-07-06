@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.secret_key = 'school-elect7'  # Required for sessions
 
 # --- LOAD VALID STUDENT IDS FROM EXCEL ---
-valid_ids = set(pd.read_excel("student_ids.xlsx")['Student ID'].astype(str).str.strip())
+valid_ids = set(pd.read_excel("student_ids.xlsx")['Student_ID'].astype(str).str.strip())
 
 # --- DB INITIALIZATION FOR LOCAL ---
 def init_db():
