@@ -131,6 +131,19 @@ def results():
     conn.close()
     return render_template('results.html', results=results)
 
+# reset_votes.py
+from app import get_db_connection, USE_POSTGRES
+
+conn = get_db_connection()
+c = conn.cursor()
+query = "DELETE FROM votes"
+c.execute(query)
+conn.commit()
+conn.close()
+
+print("✅ Votes cleared.")
+
+
 # Run locally
 if __name__ == '__main__':
     init_db()
