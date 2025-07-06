@@ -1,31 +1,30 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, session, url_for
 import os
+import pandas as pd
 
-# Determine if we are using PostgreSQL
+# --- DATABASE SETUP ---
 DATABASE_URL = os.environ.get('DATABASE_URL')
 USE_POSTGRES = bool(DATABASE_URL)
 
-# Debug logging (will show in Render logs)
 if USE_POSTGRES:
     print("Render: Connected to PostgreSQL")
-else:
-    print("Render: Falling back to SQLite")
-
-# Use correct DB adapter
-if USE_POSTGRES:
     import psycopg2
-    import psycopg2.extras
     def get_db_connection():
         return psycopg2.connect(DATABASE_URL, sslmode='require')
 else:
+    print("Render: Falling back to SQLite")
     import sqlite3
     def get_db_connection():
         return sqlite3.connect('database.db')
 
-# Create the Flask app
+# --- APP CONFIGURATION ---
 app = Flask(__name__)
+app.secret_key = 'school-elect7'  # Required for sessions
 
-# Initialize local database (only for local development)
+# --- LOAD VALID STUDENT IDS FROM EXCEL ---
+valid_ids = set(pd.read_excel("student_ids.xlsx")['Student ID'].astype(str).str.strip())
+
+# --- DB INITIALIZATION FOR LOCAL ---
 def init_db():
     if not USE_POSTGRES:
         conn = get_db_connection()
@@ -41,9 +40,36 @@ def init_db():
         conn.commit()
         conn.close()
 
-# Show voting form
-@app.route('/')
+# --- ROUTES ---
+
+# Step 1: Login with ID
+@app.route('/', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        student_id = request.form.get('student_id').strip()
+        if student_id not in valid_ids:
+            return "❌ Invalid ID. Please contact the teacher."
+        
+        conn = get_db_connection()
+        c = conn.cursor()
+        query = "SELECT COUNT(*) FROM votes WHERE student_id = %s" if USE_POSTGRES else "SELECT COUNT(*) FROM votes WHERE student_id = ?"
+        c.execute(query, (student_id,))
+        if c.fetchone()[0] > 0:
+            conn.close()
+            return "⚠️ You have already voted."
+
+        conn.close()
+        session['student_id'] = student_id
+        return redirect(url_for('vote_form'))
+
+    return render_template('login.html')
+
+# Step 2: Show Voting Form
+@app.route('/vote')
 def vote_form():
+    if 'student_id' not in session:
+        return redirect(url_for('login'))
+
     positions = {
         "President": ["Alice", "Bob"],
         "Vice President": ["Carol", "Dave"],
@@ -54,36 +80,31 @@ def vote_form():
     }
     return render_template('vote.html', positions=positions)
 
-# Save vote
+# Step 3: Handle Vote Submission
 @app.route('/submit', methods=['POST'])
 def submit_vote():
-    student_id = request.form.get('student_id')
+    student_id = session.get('student_id')
+    if not student_id:
+        return redirect(url_for('login'))
+
     conn = get_db_connection()
     c = conn.cursor()
 
-    check_query = "SELECT COUNT(*) FROM votes WHERE student_id = %s" if USE_POSTGRES else "SELECT COUNT(*) FROM votes WHERE student_id = ?"
-    c.execute(check_query, (student_id,))
-    if c.fetchone()[0] > 0:
-        conn.close()
-        return "You have already voted. Only one vote per student is allowed."
-
     for position in request.form:
-        if position == 'student_id':
-            continue
         candidate = request.form[position]
         insert_query = "INSERT INTO votes (student_id, position, candidate) VALUES (%s, %s, %s)" if USE_POSTGRES else "INSERT INTO votes (student_id, position, candidate) VALUES (?, ?, ?)"
         c.execute(insert_query, (student_id, position, candidate))
 
     conn.commit()
     conn.close()
+    session.clear()  # Prevent back-voting
     return render_template('success.html')
 
-# Show results
+# Results Page
 @app.route('/results')
 def results():
     conn = get_db_connection()
     c = conn.cursor()
-
     query = '''
         SELECT position, candidate, vote_count FROM (
             SELECT position, candidate, COUNT(*) AS vote_count,
@@ -98,8 +119,7 @@ def results():
     conn.close()
     return render_template('results.html', results=results)
 
-# Local dev runner
+# Run locally
 if __name__ == '__main__':
-    print("Flask app is starting...")
     init_db()
     app.run(debug=True, host='0.0.0.0')
