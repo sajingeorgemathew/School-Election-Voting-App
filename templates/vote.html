@@ -79,12 +79,6 @@
 <body>
     <h1>🗳️ School Election 2025</h1>
     <form method="POST" action="/submit">
-
-        <div class="student-id-box">
-            <label><strong>Student ID:</strong></label><br>
-            <input type="text" name="student_id" required>
-        </div>
-
         {% for position, candidates in positions.items() %}
         <div class="position-section">
             <div class="position-title">{{ position }}</div>
