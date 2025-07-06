@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.secret_key = 'school-elect7'  # Required for sessions
 
 # --- LOAD VALID STUDENT IDS FROM EXCEL ---
-valid_ids = set(pd.read_excel("student_ids.xlsx")['Student ID'].astype(str).str.strip())
+valid_ids = set(pd.read_excel("student_ids.xlsx")['Student_ID'].astype(str).str.strip())
 
 # --- DB INITIALIZATION FOR LOCAL ---
 def init_db():
@@ -81,6 +81,8 @@ def vote_form():
     return render_template('vote.html', positions=positions)
 
 # Step 3: Handle Vote Submission
+from flask import redirect, url_for, session
+
 @app.route('/submit', methods=['POST'])
 def submit_vote():
     student_id = session.get('student_id')
@@ -90,14 +92,24 @@ def submit_vote():
     conn = get_db_connection()
     c = conn.cursor()
 
+    # Check if student already voted
+    check_query = "SELECT COUNT(*) FROM votes WHERE student_id = %s" if USE_POSTGRES else "SELECT COUNT(*) FROM votes WHERE student_id = ?"
+    c.execute(check_query, (student_id,))
+    if c.fetchone()[0] > 0:
+        conn.close()
+        return "You have already voted. Only one vote per student is allowed."
+
+    # Insert votes, skip any non-position keys (like CSRF tokens)
     for position in request.form:
+        if position == 'csrf_token':  # skip if using csrf tokens
+            continue
         candidate = request.form[position]
         insert_query = "INSERT INTO votes (student_id, position, candidate) VALUES (%s, %s, %s)" if USE_POSTGRES else "INSERT INTO votes (student_id, position, candidate) VALUES (?, ?, ?)"
         c.execute(insert_query, (student_id, position, candidate))
 
     conn.commit()
     conn.close()
-    session.clear()  # Prevent back-voting
+    session.clear()  # prevent going back and voting again
     return render_template('success.html')
 
 # Results Page
