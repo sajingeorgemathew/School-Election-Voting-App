@@ -21,7 +21,10 @@ else:
 app = Flask(__name__)
 app.secret_key = 'school-elect7'  # Required for sessions
 
-# --- LOAD VALID STUDENT IDS FROM EXCEL ---
+# --- ADMIN CREDENTIAL ---
+ADMIN_PASSWORD = "letmein123"  # 🔐 Change this to your own admin password!
+
+# --- LOAD VALID STUDENT IDS ---
 valid_ids = set(pd.read_excel("student_ids.xlsx")['Student_ID'].astype(str).str.strip())
 
 # --- DB INITIALIZATION FOR LOCAL ---
@@ -42,7 +45,24 @@ def init_db():
 
 # --- ROUTES ---
 
-# Step 1: Login with ID
+# 🔐 ADMIN LOGIN PAGE
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        if password == ADMIN_PASSWORD:
+            session['admin'] = True
+            return redirect(url_for('results'))
+        return "❌ Incorrect admin password."
+    return render_template('admin_login.html')
+
+# 🔐 LOGOUT ADMIN
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+# Step 1: Login with Student ID
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -57,14 +77,14 @@ def login():
         if c.fetchone()[0] > 0:
             conn.close()
             return "⚠️ You have already voted."
-
         conn.close()
+        
         session['student_id'] = student_id
         return redirect(url_for('vote_form'))
 
     return render_template('login.html')
 
-# Step 2: Show Voting Form
+# Step 2: Voting Page
 @app.route('/vote')
 def vote_form():
     if 'student_id' not in session:
@@ -80,9 +100,7 @@ def vote_form():
     }
     return render_template('vote.html', positions=positions)
 
-# Step 3: Handle Vote Submission
-from flask import redirect, url_for, session
-
+# Step 3: Handle Submission
 @app.route('/submit', methods=['POST'])
 def submit_vote():
     student_id = session.get('student_id')
@@ -92,16 +110,14 @@ def submit_vote():
     conn = get_db_connection()
     c = conn.cursor()
 
-    # Check if student already voted
     check_query = "SELECT COUNT(*) FROM votes WHERE student_id = %s" if USE_POSTGRES else "SELECT COUNT(*) FROM votes WHERE student_id = ?"
     c.execute(check_query, (student_id,))
     if c.fetchone()[0] > 0:
         conn.close()
-        return "You have already voted. Only one vote per student is allowed."
+        return "You have already voted."
 
-    # Insert votes, skip any non-position keys (like CSRF tokens)
     for position in request.form:
-        if position == 'csrf_token':  # skip if using csrf tokens
+        if position == 'csrf_token':
             continue
         candidate = request.form[position]
         insert_query = "INSERT INTO votes (student_id, position, candidate) VALUES (%s, %s, %s)" if USE_POSTGRES else "INSERT INTO votes (student_id, position, candidate) VALUES (?, ?, ?)"
@@ -109,12 +125,15 @@ def submit_vote():
 
     conn.commit()
     conn.close()
-    session.clear()  # prevent going back and voting again
+    session.clear()
     return render_template('success.html')
 
-# Results Page
+# ✅ 🔐 Admin-only Results
 @app.route('/results')
 def results():
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+
     conn = get_db_connection()
     c = conn.cursor()
     query = '''
@@ -131,20 +150,20 @@ def results():
     conn.close()
     return render_template('results.html', results=results)
 
-# reset_votes.py
-from app import get_db_connection, USE_POSTGRES
+# ✅ 🔐 Admin-only Reset Route
+@app.route('/reset_votes')
+def reset_votes():
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
 
-conn = get_db_connection()
-c = conn.cursor()
-query = "DELETE FROM votes"
-c.execute(query)
-conn.commit()
-conn.close()
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("DELETE FROM votes")
+    conn.commit()
+    conn.close()
+    return "✅ All votes cleared successfully!"
 
-print("✅ Votes cleared.")
-
-
-# Run locally
+# Run app locally
 if __name__ == '__main__':
     init_db()
     app.run(debug=True, host='0.0.0.0')
