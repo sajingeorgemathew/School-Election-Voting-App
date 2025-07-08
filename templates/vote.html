@@ -1,143 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Vote Now - School Election 2025</title>
-<style>
-  /* Reset some basic styles */
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    font-family: 'Roboto', Arial, sans-serif;
-    background-color: #fff;
-    color: #333;
-    margin: 0; 
-    padding: 0;
-  }
-  header {
-    background-color: #0046be;
-    color: white;
-    font-weight: 700;
-    font-size: 1.8rem;
-    padding: 20px 30px;
-    text-align: center;
-    letter-spacing: 1.5px;
-  }
-  main {
-    max-width: 960px;
-    margin: 40px auto;
-    padding: 0 20px 60px;
-  }
-  .position-section {
-    margin-bottom: 50px;
-  }
-  .position-title {
-    font-size: 1.9rem;
-    color: #0046be;
-    border-bottom: 4px solid #ffd600;
-    padding-bottom: 8px;
-    margin-bottom: 25px;
-  }
-  .candidates {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 25px;
-  }
-  .candidate-card {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    width: 160px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
-    cursor: pointer;
-  }
-  .candidate-card:hover,
-  .candidate-card input:checked + label {
-    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-    border-color: #0046be;
-  }
-  .candidate-card img {
-    border-radius: 50%;
-    width: 90px;
-    height: 90px;
-    object-fit: cover;
-    margin-bottom: 15px;
-    border: 2px solid transparent;
-    transition: border-color 0.3s ease;
-  }
-  input[type="radio"] {
-    display: none;
-  }
-  input[type="radio"]:checked + label img {
-    border-color: #0046be;
-  }
-  input[type="radio"]:checked + label {
-    font-weight: 700;
-    color: #0046be;
-  }
-  .candidate-name {
-    font-size: 1.1rem;
-  }
-  .submit-btn {
-    display: block;
-    margin: 0 auto;
-    padding: 18px 60px;
-    background-color: #0046be;
-    color: white;
-    font-weight: 700;
-    font-size: 1.3rem;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 6px 12px rgba(0, 70, 190, 0.6);
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  .submit-btn:hover {
-    background-color: #002f6c;
-  }
-  /* Responsive */
-  @media (max-width: 600px) {
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vote Now - School Election 2025</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background-color: #fff;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #0046be;
+      color: white;
+      font-weight: 700;
+      font-size: 1.8rem;
+      padding: 20px 30px;
+      text-align: center;
+      letter-spacing: 1.5px;
+    }
+    main {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+    }
+    .position-section {
+      margin-bottom: 50px;
+    }
+    .position-title {
+      font-size: 1.9rem;
+      color: #0046be;
+      border-bottom: 4px solid #ffd600;
+      padding-bottom: 8px;
+      margin-bottom: 25px;
+    }
     .candidates {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 25px;
       justify-content: center;
     }
     .candidate-card {
-      width: 140px;
-      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      width: 160px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+      cursor: pointer;
     }
-    .position-title {
-      font-size: 1.5rem;
+    .candidate-card:hover {
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+      border-color: #0046be;
     }
-  }
-</style>
+    .candidate-card img {
+      border-radius: 50%;
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
+      margin-bottom: 15px;
+      border: 2px solid transparent;
+      transition: border-color 0.3s ease;
+    }
+    input[type="radio"] {
+      display: none;
+    }
+    input[type="radio"]:checked + label .candidate-card {
+      border-color: #0046be;
+      box-shadow: 0 8px 16px rgba(0, 70, 190, 0.25);
+    }
+    input[type="radio"]:checked + label .candidate-card img {
+      border-color: #0046be;
+    }
+    input[type="radio"]:checked + label .candidate-name {
+      font-weight: bold;
+      color: #0046be;
+    }
+    .candidate-name {
+      font-size: 1.1rem;
+    }
+    .submit-btn {
+      display: block;
+      margin: 0 auto;
+      padding: 18px 60px;
+      background-color: #0046be;
+      color: white;
+      font-weight: 700;
+      font-size: 1.3rem;
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 6px 12px rgba(0, 70, 190, 0.6);
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .submit-btn:hover {
+      background-color: #002f6c;
+    }
+    @media (max-width: 600px) {
+      .candidate-card {
+        width: 140px;
+        padding: 15px;
+      }
+      .position-title {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
-<header>🗳️ School Election 2025</header>
+  <header>🗳️ School Election 2025</header>
 
-<main>
-<form method="POST" action="/submit">
-  {% for position, candidates in positions.items() %}
-  <section class="position-section">
-    <h2 class="position-title">{{ position }}</h2>
-    <div class="candidates">
-      {% for candidate in candidates %}
-      <div class="candidate-card">
-        <input type="radio" id="{{ position }}-{{ candidate }}" name="{{ position }}" value="{{ candidate }}" required />
-        <label for="{{ position }}-{{ candidate }}">
-          <img src="/static/{{ candidate | lower }}.jpg" alt="{{ candidate }} photo" onerror="this.src='https://via.placeholder.com/90?text=No+Image'"/>
-          <div class="candidate-name">{{ candidate }}</div>
-        </label>
-      </div>
+  <main>
+    <form method="POST" action="/submit">
+      {% for position, candidates in positions.items() %}
+      <section class="position-section">
+        <h2 class="position-title">{{ position }}</h2>
+        <div class="candidates">
+          {% for candidate in candidates %}
+          <input type="radio" id="{{ position }}-{{ candidate }}" name="{{ position }}" value="{{ candidate }}" required />
+          <label for="{{ position }}-{{ candidate }}">
+            <div class="candidate-card">
+              <img src="/static/{{ candidate | lower }}.jpg?v=2" alt="{{ candidate }} photo" onerror="this.src='https://via.placeholder.com/90?text=No+Image'" />
+              <div class="candidate-name">{{ candidate }}</div>
+            </div>
+          </label>
+          {% endfor %}
+        </div>
+      </section>
       {% endfor %}
-    </div>
-  </section>
-  {% endfor %}
-  
-  <button type="submit" class="submit-btn">Submit Vote</button>
-</form>
-</main>
+      <button type="submit" class="submit-btn">Submit Vote</button>
+    </form>
+  </main>
 </body>
 </html>
