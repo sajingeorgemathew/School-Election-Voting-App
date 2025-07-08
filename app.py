@@ -91,14 +91,13 @@ def vote_form():
         return redirect(url_for('login'))
 
     positions = {
-        "President": ["Alice", "Bob"],
-        "Vice President": ["Carol", "Dave"],
-        "Secretary": ["Eve", "Frank"],
-        "Treasurer": ["Grace", "Heidi"],
-        "Sports Captain": ["Ivan", "Judy"],
-        "Cultural Head": ["Mallory", "Niaj"]
+        "Head Girl": ["Niveditha", "Nandhana"],
+        "Asst. Head Girl": ["Vaiga", "Jovitha", "Diya"],
+        "Vice Sports Captain": ["Harinandana", "Neeraja", "Avandhika", "Devaduth", "Vivek", "Niranjan", "Nakshakthra"]
     }
+
     return render_template('vote.html', positions=positions)
+
 
 # Step 3: Handle Submission
 @app.route('/submit', methods=['POST'])
