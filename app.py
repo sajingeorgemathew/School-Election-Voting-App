@@ -130,24 +130,31 @@ def submit_vote():
 # ✅ 🔐 Admin-only Results
 @app.route('/results')
 def results():
-    if not session.get('admin'):
-        return redirect(url_for('admin'))
-
     conn = get_db_connection()
     c = conn.cursor()
+    
     query = '''
-        SELECT position, candidate, vote_count FROM (
-            SELECT position, candidate, COUNT(*) AS vote_count,
-                   RANK() OVER (PARTITION BY position ORDER BY COUNT(*) DESC) AS rank
-            FROM votes
-            GROUP BY position, candidate
-        ) AS ranked
-        WHERE rank = 1;
+        SELECT position, candidate, COUNT(*) AS vote_count
+        FROM votes
+        GROUP BY position, candidate
+        ORDER BY position, vote_count DESC;
     '''
     c.execute(query)
-    results = c.fetchall()
+    rows = c.fetchall()
     conn.close()
-    return render_template('results.html', results=results)
+
+    # Organize results by position
+    from collections import defaultdict
+    grouped_results = defaultdict(list)
+    for row in rows:
+        position, candidate, vote_count = row
+        grouped_results[position].append({
+            'candidate': candidate,
+            'votes': vote_count
+        })
+
+    return render_template('results.html', grouped_results=grouped_results)
+
 
 # ✅ 🔐 Admin-only Reset Route
 @app.route('/reset_votes')

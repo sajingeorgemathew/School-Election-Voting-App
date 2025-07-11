@@ -1,34 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Live Election Results</title>
+    <meta charset="UTF-8">
+    <title>Election Results</title>
     <style>
-        body { font-family: Arial; padding: 20px; }
-        table { border-collapse: collapse; width: 70%; margin-top: 20px; }
-        th, td { border: 1px solid #999; padding: 10px; text-align: center; }
-        th { background-color: #eee; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            padding: 30px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .position {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .position h2 {
+            color: #0046be;
+            border-bottom: 2px solid #ffd600;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+        }
+        .candidate {
+            font-size: 1.2em;
+            margin: 8px 0;
+        }
+        .rank-1 {
+            font-weight: bold;
+            color: #2e7d32;
+        }
     </style>
 </head>
 <body>
-    <h2>Live Election Results – Top Candidate Per Position</h2>
+    <h1>📊 Election Results</h1>
 
-    {% if results %}
-    <table>
-        <tr>
-            <th>Position</th>
-            <th>Candidate</th>
-            <th>Votes</th>
-        </tr>
-        {% for row in results %}
-        <tr>
-            <td>{{ row[0] }}</td>
-            <td>{{ row[1] }}</td>
-            <td>{{ row[2] }}</td>
-        </tr>
+    {% for position, candidates in grouped_results.items() %}
+    <div class="position">
+        <h2>{{ position }}</h2>
+        {% for c in candidates %}
+            <div class="candidate {% if loop.index == 1 %}rank-1{% endif %}">
+                {{ loop.index }}. {{ c.candidate }} — {{ c.votes }} vote{{ 's' if c.votes != 1 else '' }}
+            </div>
         {% endfor %}
-    </table>
-    {% else %}
-    <p>No votes yet.</p>
-    {% endif %}
+    </div>
+    {% endfor %}
 </body>
 </html>
