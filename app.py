@@ -130,6 +130,9 @@ def submit_vote():
 # ✅ 🔐 Admin-only Results
 @app.route('/results')
 def results():
+    if not session.get('admin'):
+        return redirect(url_for('admin'))
+
     conn = get_db_connection()
     c = conn.cursor()
     
@@ -154,7 +157,6 @@ def results():
         })
 
     return render_template('results.html', grouped_results=grouped_results)
-
 
 # ✅ 🔐 Admin-only Reset Route
 @app.route('/reset_votes')
