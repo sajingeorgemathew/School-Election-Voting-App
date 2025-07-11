@@ -135,7 +135,7 @@ def results():
 
     conn = get_db_connection()
     c = conn.cursor()
-    
+
     query = '''
         SELECT position, candidate, COUNT(*) AS vote_count
         FROM votes
@@ -146,7 +146,6 @@ def results():
     rows = c.fetchall()
     conn.close()
 
-    # Organize results by position
     from collections import defaultdict
     grouped_results = defaultdict(list)
     for row in rows:
@@ -157,6 +156,7 @@ def results():
         })
 
     return render_template('results.html', grouped_results=grouped_results)
+
 
 # ✅ 🔐 Admin-only Reset Route
 @app.route('/reset_votes')
